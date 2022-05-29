@@ -36,12 +36,13 @@ export const updateCustomer = async (req, res) => {
   const { name, phone, cpf, birthday } = res.locals.customer;
   try {
     await database.query(
-      `UPDATE customers SET nome = $1, phone = $2, cpf = $3, birthday = $4 
-      WHERE id = $5`,
+      `UPDATE customers SET nome=$1, phone=$2, cpf=$3, birthday=$4 
+      WHERE id=$5`,
       [name, phone, cpf, birthday, parseInt(id)]
     );
     res.sendStatus(201);
   } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 };
