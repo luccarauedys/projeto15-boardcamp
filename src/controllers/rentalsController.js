@@ -10,7 +10,7 @@ export const getRentals = async (req, res) => {
     games.name AS "gameName",
     categories.id AS "categoryId", categories.name AS "categoryName" 
     FROM rentals 
-    JOIN customers ON rentals."customerId" = customer.id 
+    JOIN customers ON rentals."customerId" = customers.id 
     JOIN games ON rentals."gameId" = games.id
     JOIN categories ON games."categoryId" = categories.id
     ${customerId && `WHERE customers.id = ${parseInt(customerId)}`}
