@@ -19,6 +19,6 @@ export const validateIfCategoryAlreadyExists = async (req, res, next) => {
     [name]
   ).rows;
 
-  if (categoryExists.length) return res.sendStatus(409);
+  if (categoryExists) return res.sendStatus(409);
   next();
 };
