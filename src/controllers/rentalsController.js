@@ -24,17 +24,10 @@ export const getRentals = async (req, res) => {
 };
 
 export const insertRental = async (req, res) => {
-  const {
-    rental: { customerId, gameId, daysRented },
-    game: { pricePerDay },
-  } = res.locals;
-
+  const { customerId, gameId, daysRented } = res.locals.rental;
+  const { pricePerDay } = res.locals.game;
   try {
-    const rentDate = new Date()
-      .toLocaleDateString("pt-BR")
-      .split("/")
-      .reverse()
-      .join("-");
+    const rentDate = generateDate();
     const [returnDate, delayFee] = [null, null];
     const originalPrice = pricePerDay * daysRented;
 
@@ -57,11 +50,27 @@ export const insertRental = async (req, res) => {
   }
 };
 
-export const returnRental = async (req, res) => {};
+export const returnRental = async (req, res) => {
+  const { id } = req.params;
+  const { rentDate, pricePerDay } = res.locals.rental;
+  try {
+    const returnDate = generateDate();
+    const delayFee = calcDelayFee(rentDate, returnDate, pricePerDay);
+
+    await database.query(
+      `UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3`,
+      [returnDate, delayFee, id]
+    );
+
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
 
 export const deleteRental = async (req, res) => {};
 
-const formatRentals = (rentals) => {
+function formatRentals(rentals) {
   const formated = rentals.map((rental) => {
     const rentalModel = {
       ...rental,
@@ -86,4 +95,16 @@ const formatRentals = (rentals) => {
   });
 
   return formated;
-};
+}
+
+function calcDelayFee(rentD, returnD, pricePerDay) {
+  const rentDate = new Date(rentD);
+  const returnDate = new Date(returnD);
+  const diff = Math.abs(returnDate - rentDate);
+  const numDays = diff / (1000 * 3600 * 24);
+  return numDays * pricePerDay;
+}
+
+function generateDate() {
+  return new Date().toLocaleDateString("pt-BR").split("/").reverse().join("-");
+}

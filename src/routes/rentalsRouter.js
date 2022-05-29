@@ -12,6 +12,8 @@ import {
   verifyIfCustomerExists,
   verifyIfGameExists,
   verifyIfGameIsAvailable,
+  validateIfRentalExists,
+  validateIfRentalIsOnGoing,
 } from "./../middlewares/rentalsMiddlewares.js";
 
 const rentalsRouter = Router();
@@ -27,8 +29,18 @@ rentalsRouter.post(
   insertRental
 );
 
-rentalsRouter.post("/rentals/:id/return", returnRental);
+rentalsRouter.post(
+  "/rentals/:id/return",
+  validateIfRentalExists,
+  validateIfRentalIsOnGoing,
+  returnRental
+);
 
-rentalsRouter.delete("/rentals/:id", deleteRental);
+rentalsRouter.delete(
+  "/rentals/:id",
+  validateIfRentalExists,
+  validateIfRentalIsOnGoing,
+  deleteRental
+);
 
 export default rentalsRouter;

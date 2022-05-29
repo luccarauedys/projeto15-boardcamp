@@ -12,7 +12,7 @@ export const validateRentalsData = (req, res, next) => {
 };
 
 export const verifyIfCustomerExists = async (req, res, next) => {
-  const { customerId } = req.body.rental;
+  const { customerId } = res.locals.rental;
   try {
     const customer = await database.query(
       `SELECT * FROM customers WHERE id = $1`,
@@ -27,7 +27,7 @@ export const verifyIfCustomerExists = async (req, res, next) => {
 };
 
 export const verifyIfGameExists = async (req, res, next) => {
-  const { gameId } = req.body.rental;
+  const { gameId } = res.locals.rental;
   try {
     const game = await database.query(`SELECT * FROM games WHERE id = $1`, [
       gameId,
@@ -43,7 +43,7 @@ export const verifyIfGameExists = async (req, res, next) => {
 };
 
 export const verifyIfGameIsAvailable = async (req, res, next) => {
-  const { gameId } = req.body.rental;
+  const { gameId } = res.locals.rental;
   const { stockTotal } = res.locals.game;
   try {
     const gameRentals = database.query(
@@ -60,4 +60,30 @@ export const verifyIfGameIsAvailable = async (req, res, next) => {
   } catch (error) {
     res.status(500).send(error);
   }
+};
+
+export const validateIfRentalExists = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const rental = await database.query(
+      `SELECT r."rentDate", r."returnDate", g."pricePerDay" 
+      FROM rentals r JOIN games g 
+      ON r."gameId" = g.id
+      WHERE r.id = $1`,
+      [id]
+    ).rows[0];
+
+    if (!rental) return res.sendStatus(400);
+
+    res.locals.rental = rental;
+    next();
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+export const validateIfRentalIsOnGoing = async (req, res, next) => {
+  const { returnDate } = res.locals.rental;
+  if (returnDate) return res.sendStatus(400);
+  next();
 };
