@@ -23,7 +23,39 @@ export const getRentals = async (req, res) => {
   }
 };
 
-export const insertRental = async (req, res) => {};
+export const insertRental = async (req, res) => {
+  const {
+    rental: { customerId, gameId, daysRented },
+    game: { pricePerDay },
+  } = res.locals;
+
+  try {
+    const rentDate = new Date()
+      .toLocaleDateString("pt-BR")
+      .split("/")
+      .reverse()
+      .join("-");
+    const [returnDate, delayFee] = [null, null];
+    const originalPrice = pricePerDay * daysRented;
+
+    await database.query(
+      `INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") 
+      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        customerId,
+        gameId,
+        rentDate,
+        daysRented,
+        returnDate,
+        originalPrice,
+        delayFee,
+      ]
+    );
+    res.sendStatus(201);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
 
 export const returnRental = async (req, res) => {};
 
