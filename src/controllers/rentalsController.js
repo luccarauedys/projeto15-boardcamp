@@ -12,14 +12,12 @@ export const getRentals = async (req, res) => {
     FROM rentals 
     JOIN customers ON rentals."customerId" = customers.id 
     JOIN games ON rentals."gameId" = games.id
-    JOIN categories ON games."categoryId" = categories.id`);
-    res.status(200).send(rentals.rows);
+    JOIN categories ON games."categoryId" = categories.id
+    ${customerId ? `WHERE customers.id = ${parseInt(customerId)}` : ""}
+    ${gameId ? `WHERE games.id = ${parseInt(gameId)}` : ""}`);
 
-    // ${customerId && `WHERE customers.id = ${parseInt(customerId)}`}
-    // ${gameId && `WHERE games.id = ${parseInt(gameId)}`}
-
-    // const finalResult = formatRentals(rentals.rows);
-    // res.status(200).send(finalResult);
+    const finalResult = formatRentals(rentals.rows);
+    res.status(200).send(finalResult);
   } catch (error) {
     res.status(500).send(error);
   }
