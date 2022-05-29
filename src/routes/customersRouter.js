@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   getCustomers,
+  getCustomerById,
   insertCustomer,
   updateCustomer,
 } from "./../controllers/customersController.js";
@@ -14,6 +15,8 @@ import {
 const customersRouter = Router();
 
 customersRouter.get("/customers", getCustomers);
+
+customersRouter.get("/customers/:id", getCustomerById);
 
 customersRouter.post(
   "/customers",

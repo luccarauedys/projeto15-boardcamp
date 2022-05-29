@@ -17,6 +17,22 @@ export const getCustomers = async (req, res) => {
   }
 };
 
+export const getCustomerById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const customer = await database.query(
+      `SELECT * FROM customers
+    WHERE id=$1`,
+      [id]
+    );
+
+    if (!customer.rows[0]) return res.sendStatus(404);
+    res.status(200).send(customer.rows);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
 export const insertCustomer = async (req, res) => {
   const { name, phone, cpf, birthday } = res.locals.customer;
   try {
@@ -36,13 +52,12 @@ export const updateCustomer = async (req, res) => {
   const { name, phone, cpf, birthday } = res.locals.customer;
   try {
     await database.query(
-      `UPDATE customers SET nome=$1, phone=$2, cpf=$3, birthday=$4 
-      WHERE id=$5`,
-      [name, phone, cpf, birthday, parseInt(id)]
+      `UPDATE customers SET nome = $1, phone = $2, cpf = $3, birthday = $4 
+      WHERE id = $5`,
+      [name, phone, cpf, birthday, id]
     );
     res.sendStatus(201);
   } catch (error) {
-    console.log(error);
     res.status(500).send(error);
   }
 };
