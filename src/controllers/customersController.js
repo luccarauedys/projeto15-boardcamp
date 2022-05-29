@@ -38,7 +38,7 @@ export const updateCustomer = async (req, res) => {
     await database.query(
       `UPDATE customers SET nome = $1, phone = $2, cpf = $3, birthday = $4 
       WHERE id = $5`,
-      [name, phone, cpf, birthday, id]
+      [name, phone, cpf, birthday, parseInt(id)]
     );
     res.sendStatus(201);
   } catch (error) {
