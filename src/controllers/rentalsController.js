@@ -68,7 +68,15 @@ export const returnRental = async (req, res) => {
   }
 };
 
-export const deleteRental = async (req, res) => {};
+export const deleteRental = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await database.query(`DELETE FROM rentals WHERE id = $1`, [id]);
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
 
 function formatRentals(rentals) {
   const formated = rentals.map((rental) => {

@@ -64,6 +64,7 @@ export const verifyIfGameIsAvailable = async (req, res, next) => {
 
 export const validateIfRentalExists = async (req, res, next) => {
   const { id } = req.params;
+
   try {
     const rental = await database.query(
       `SELECT r."rentDate", r."returnDate", g."pricePerDay" 
@@ -73,7 +74,7 @@ export const validateIfRentalExists = async (req, res, next) => {
       [id]
     ).rows[0];
 
-    if (!rental) return res.sendStatus(400);
+    if (!rental) return res.sendStatus(404);
 
     res.locals.rental = rental;
     next();
