@@ -16,7 +16,7 @@ export const getRentals = async (req, res) => {
     ${customerId && `WHERE customers.id = ${parseInt(customerId)}`}
     ${gameId && `WHERE games.id = ${parseInt(gameId)}`}
     `);
-    res.status(200).send(rentals);
+    res.status(200).send(rentals.rows);
 
     // const finalResult = formatRentals(rentals.rows);
     // res.status(200).send(finalResult);
