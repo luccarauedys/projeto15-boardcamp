@@ -1,5 +1,5 @@
 import database from "./../database/database.js";
-import gamesSchema from "./schemas/gamesSchema.js";
+import gamesSchema from "./../schemas/gamesSchema.js";
 
 export const validateGamesData = (req, res, next) => {
   const game = req.body;
