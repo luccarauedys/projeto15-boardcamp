@@ -17,8 +17,8 @@ export const validateIfCategoryAlreadyExists = async (req, res, next) => {
   const categoryExists = await database.query(
     `SELECT * FROM categories WHERE name = $1`,
     [name]
-  ).rows;
+  );
 
-  if (categoryExists) return res.sendStatus(409);
+  if (categoryExists.rows[0]) return res.sendStatus(409);
   next();
 };
