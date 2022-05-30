@@ -2,11 +2,14 @@ import database from "./../database/database.js";
 import rentalsSchema from "./../schemas/rentalsSchema.js";
 
 export const validateRentalsData = (req, res, next) => {
-  const rental = req.body;
+  const { customerId, gameId, daysRented } = req.body;
+  const rental = new Object();
+  rental.customerId = customerId;
+  rental.gameId = gameId;
+  rental.daysRented = parseInt(daysRented);
 
   const { error } = rentalsSchema.validate(rental);
   if (error) return res.sendStatus(400);
-
   res.locals.rental = rental;
   next();
 };
@@ -17,9 +20,9 @@ export const verifyIfCustomerExists = async (req, res, next) => {
     const customer = await database.query(
       `SELECT * FROM customers WHERE id = $1`,
       [customerId]
-    ).rows[0];
+    );
 
-    if (!customer) return res.sendStatus(400);
+    if (!customer.rows[0]) return res.sendStatus(400);
     next();
   } catch (error) {
     res.status(500).send(error);
@@ -31,11 +34,10 @@ export const verifyIfGameExists = async (req, res, next) => {
   try {
     const game = await database.query(`SELECT * FROM games WHERE id = $1`, [
       gameId,
-    ]).rows[0];
+    ]);
 
-    if (!game) return res.sendStatus(400);
-
-    res.locals.game = game;
+    if (!game.rows[0]) return res.sendStatus(400);
+    res.locals.game = game.rows[0];
     next();
   } catch (error) {
     res.status(500).send(error);
@@ -46,16 +48,16 @@ export const verifyIfGameIsAvailable = async (req, res, next) => {
   const { gameId } = res.locals.rental;
   const { stockTotal } = res.locals.game;
   try {
-    const gameRentals = database.query(
+    const gameRentals = await database.query(
       `SELECT rentals."returnDate" FROM rentals WHERE "gameId" = $1`,
       [gameId]
-    ).rows;
+    );
 
-    const rentedGames = gameRentals.filter(
-      (rental) => (rental.returnDate = null)
-    ).length;
+    const rentedGames = gameRentals.rows.filter(
+      ({ returnDate }) => returnDate == null
+    );
 
-    if (stockTotal <= rentedGames) return res.sendStatus(400);
+    if (stockTotal <= rentedGames.length) return res.sendStatus(400);
     next();
   } catch (error) {
     res.status(500).send(error);
@@ -64,7 +66,6 @@ export const verifyIfGameIsAvailable = async (req, res, next) => {
 
 export const validateIfRentalExists = async (req, res, next) => {
   const { id } = req.params;
-
   try {
     const rental = await database.query(
       `SELECT r."rentDate", r."returnDate", g."pricePerDay" 
@@ -72,11 +73,10 @@ export const validateIfRentalExists = async (req, res, next) => {
       ON r."gameId" = g.id
       WHERE r.id = $1`,
       [id]
-    ).rows[0];
+    );
 
-    if (!rental) return res.sendStatus(404);
-
-    res.locals.rental = rental;
+    if (!rental.rows[0]) return res.sendStatus(404);
+    res.locals.rental = rental.rows[0];
     next();
   } catch (error) {
     res.status(500).send(error);
@@ -85,6 +85,6 @@ export const validateIfRentalExists = async (req, res, next) => {
 
 export const validateIfRentalIsOnGoing = async (req, res, next) => {
   const { returnDate } = res.locals.rental;
-  if (returnDate) return res.sendStatus(400);
+  if (returnDate != null) return res.sendStatus(400);
   next();
 };

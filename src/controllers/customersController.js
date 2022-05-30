@@ -22,12 +22,12 @@ export const getCustomerById = async (req, res) => {
   try {
     const customer = await database.query(
       `SELECT * FROM customers
-    WHERE id=$1`,
+      WHERE id=$1`,
       [id]
     );
 
     if (!customer.rows[0]) return res.sendStatus(404);
-    res.status(200).send(customer.rows);
+    res.status(200).send(customer.rows[0]);
   } catch (error) {
     res.status(500).send(error);
   }

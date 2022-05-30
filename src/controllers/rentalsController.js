@@ -1,7 +1,8 @@
 import database from "./../database/database.js";
 
 export const getRentals = async (req, res) => {
-  const { customerId, gameId } = req.query;
+  const customerId = parseInt(req.query.customerId);
+  const gameId = parseInt(req.query.gameId);
   try {
     const rentals = await database.query(`
     SELECT 
@@ -13,8 +14,8 @@ export const getRentals = async (req, res) => {
     JOIN customers ON rentals."customerId" = customers.id 
     JOIN games ON rentals."gameId" = games.id
     JOIN categories ON games."categoryId" = categories.id
-    ${customerId ? `WHERE customers.id = ${parseInt(customerId)}` : ""}
-    ${gameId ? `WHERE games.id = ${parseInt(gameId)}` : ""}`);
+    ${customerId ? `WHERE customers.id = ${customerId}` : ""}
+    ${gameId ? `WHERE games.id = ${gameId}` : ""}`);
 
     const finalResult = formatRentals(rentals.rows);
     res.status(200).send(finalResult);
@@ -29,18 +30,18 @@ export const insertRental = async (req, res) => {
   try {
     const rentDate = generateDate();
     const [returnDate, delayFee] = [null, null];
-    const originalPrice = pricePerDay * daysRented;
+    const originalPrice = Number(pricePerDay) * parseInt(daysRented);
 
     await database.query(
       `INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") 
       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
-        customerId,
-        gameId,
+        parseInt(customerId),
+        parseInt(gameId),
         rentDate,
-        daysRented,
+        parseInt(daysRented),
         returnDate,
-        originalPrice,
+        Number(originalPrice),
         delayFee,
       ]
     );
@@ -61,7 +62,6 @@ export const returnRental = async (req, res) => {
       `UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3`,
       [returnDate, delayFee, id]
     );
-
     res.sendStatus(200);
   } catch (error) {
     res.status(500).send(error);
@@ -106,10 +106,10 @@ function formatRentals(rentals) {
 }
 
 function calcDelayFee(rentD, returnD, pricePerDay) {
-  const rentDate = new Date(rentD);
-  const returnDate = new Date(returnD);
+  const rentDate = new Date(`${rentD}`);
+  const returnDate = new Date(`${returnD}`);
   const diff = Math.abs(returnDate - rentDate);
-  const numDays = diff / (1000 * 3600 * 24);
+  const numDays = Math.floor(diff / (1000 * 3600 * 24));
   return numDays * pricePerDay;
 }
 
