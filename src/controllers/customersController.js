@@ -1,16 +1,19 @@
 import database from "./../database/database.js";
 
 export const getCustomers = async (req, res) => {
-  const { cpf } = req.query;
-  try {
-    const customers = cpf
-      ? await database.query(
-          `SELECT * FROM customers 
-           WHERE cpf LIKE $1`,
-          [`${cpf}%`]
-        )
-      : await database.query(`SELECT * FROM customers`);
+  const cpf = parseInt(req.query.cpf);
+  const limit = parseInt(req.query.limit);
+  const offset = parseInt(req.query.offset);
 
+  try {
+    const customers = await database.query(
+      `
+    SELECT * FROM customers
+    ${cpf ? `WHERE cpf LIKE '${cpf + "%"}'` : ""}
+    ${limit ? `LIMIT ${limit}` : ""}
+    ${offset ? `OFFSET ${offset}` : ""}
+    `
+    );
     res.status(200).send(customers.rows);
   } catch (error) {
     res.status(500).send(error);

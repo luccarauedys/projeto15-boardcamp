@@ -3,6 +3,9 @@ import database from "./../database/database.js";
 export const getRentals = async (req, res) => {
   const customerId = parseInt(req.query.customerId);
   const gameId = parseInt(req.query.gameId);
+  const limit = parseInt(req.query.limit);
+  const offset = parseInt(req.query.offset);
+
   try {
     const rentals = await database.query(`
     SELECT 
@@ -15,7 +18,10 @@ export const getRentals = async (req, res) => {
     JOIN games ON rentals."gameId" = games.id
     JOIN categories ON games."categoryId" = categories.id
     ${customerId ? `WHERE customers.id = ${customerId}` : ""}
-    ${gameId ? `WHERE games.id = ${gameId}` : ""}`);
+    ${gameId ? `WHERE games.id = ${gameId}` : ""}
+    ${limit ? `LIMIT ${limit}` : ""}
+    ${offset ? `OFFSET ${offset}` : ""}
+    `);
 
     const finalResult = formatRentals(rentals.rows);
     res.status(200).send(finalResult);

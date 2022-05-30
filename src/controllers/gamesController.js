@@ -1,10 +1,16 @@
 import database from "./../database/database.js";
 
 export const getGames = async (req, res) => {
+  const limit = parseInt(req.query.limit);
+  const offset = parseInt(req.query.offset);
+
   try {
-    const games =
-      await database.query(`SELECT games.*, categories.name as "categoryName" 
-    FROM games JOIN categories ON games."categoryId" = categories.id`);
+    const games = await database.query(`
+      SELECT games.*, categories.name as "categoryName" 
+      FROM games JOIN categories ON games."categoryId" = categories.id 
+      ${limit ? `LIMIT ${limit}` : ""}
+      ${offset ? `OFFSET ${offset}` : ""}
+      `);
     res.status(200).send(games.rows);
   } catch (error) {
     res.status(500).send(error);
